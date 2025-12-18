@@ -12,6 +12,16 @@ public class SpawnerScript : MonoBehaviour
     [SerializeField] private bool canSpawn = true;
 
     [SerializeField] private GameObject[] enemyPrefabs;
+
+    public float minEnemySpeed = 2f;
+    public float startEnemySpeed = 2f;
+    public float increaseEnemySpeed = 0.01f;
+
+
+    public int scoreStep = 5;
+    public float decreaseRate = 0.01f;
+    public float minSpawnRate = 0.1f;
+
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
@@ -22,18 +32,34 @@ public class SpawnerScript : MonoBehaviour
     //spawns projectiles
     private IEnumerator Spawner()
     {
-        WaitForSeconds wait = new WaitForSeconds(spawnRate);
-
+        float currentSpawnRate = spawnRate;
         while (canSpawn)
         {
-            yield return wait;
+            yield return new WaitForSeconds(currentSpawnRate);
 
             Vector3 spawnPosition = RandomOffScreenPosition();
 
-            int rand = Random.Range(0,enemyPrefabs.Length);
+            int rand = Random.Range(0, enemyPrefabs.Length);
             GameObject enemyToSpawn = enemyPrefabs[rand];
 
-            Instantiate(enemyToSpawn , spawnPosition, Quaternion.identity);
+            GameObject newEnemy = Instantiate(enemyToSpawn, spawnPosition, Quaternion.identity);
+
+            //speed calculations
+            int currentScore = ScoreManager.instance.GetScore();
+            float currentSpeed = startEnemySpeed + (currentScore * increaseEnemySpeed);
+            float randomSpeed = Random.Range(minEnemySpeed, currentSpeed);
+            
+            //spawnrate calculations
+            int steps = currentScore / scoreStep;
+            float newSpawnRate = spawnRate - (steps * decreaseRate);
+
+            currentSpawnRate = Mathf.Max(newSpawnRate, minSpawnRate);
+
+            targeting enemyScript = newEnemy.GetComponent<targeting>();
+
+            enemyScript.speed = randomSpeed;
+
+
         }
 
     }
@@ -46,8 +72,8 @@ public class SpawnerScript : MonoBehaviour
 
         float left = cam.transform.position.x - screenWidth / 2f - spawnMarginX;
         float right = cam.transform.position.x + screenWidth / 2f + spawnMarginX;
-        float bottom = cam.transform.position.x - screenHeight / 2f - spawnMarginY;
-        float top = cam.transform.position.x + screenHeight / 2f + spawnMarginY;
+        float bottom = cam.transform.position.y - screenHeight / 2f - spawnMarginY;
+        float top = cam.transform.position.y + screenHeight / 2f + spawnMarginY;
 
         int side = Random.Range(0, 4);
 

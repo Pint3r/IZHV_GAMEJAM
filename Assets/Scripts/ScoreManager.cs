@@ -16,6 +16,27 @@ public class ScoreManager : MonoBehaviour
         else Destroy(gameObject);
     }
 
+    public void CheckHighScore()
+    {
+        int currentHighScore = PlayerPrefs.GetInt("HighScore", 0);
+
+        if (score > currentHighScore)
+        {
+            PlayerPrefs.SetInt("HighScore", score);
+            PlayerPrefs.Save();
+        }
+    }
+
+    public int GetHighScore()
+    {
+        return PlayerPrefs.GetInt("HighScore", 0);
+    }
+
+    public int GetScore()
+    {
+        return score;
+    }
+
     void Start()
     {
         UpdateScoreUI();
@@ -31,7 +52,7 @@ public class ScoreManager : MonoBehaviour
     {
         if (scoreText != null)
         {
-            scoreText.text = "Deflected: " + score.ToString();
+            scoreText.text = "Score: " + score.ToString();
         }
     }
 }
